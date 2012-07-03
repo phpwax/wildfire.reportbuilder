@@ -5,12 +5,12 @@ class WildfireGraph extends WaxModel{
   public function setup(){
     $this->define("title", "CharField", array('required'=>true, 'default'=>'TITLE', 'scaffold'=>true));
     $this->define("type", "CharField", array('scaffold'=>true, 'widget'=>'SelectInput', 'choices'=>WildfireGraph::$graph_types));
-    $this->define("primary_metric_name", "CharField", array('scaffold'=>true));
-    $this->define("primary_metric", "CharField"));
-    $this->define("secondary_metric_name", "CharField", array('scaffold'=>true));
-    $this->define("basic_secondary_metric", "CharField", array('label'=>'Secondary metric (for simple graphs like count)'));
-    $this->define("complex_secondary_metric", "CharField", array('label'=>'Complex metric (eg splitting the values by gender'));
 
+    $this->define("primary_metric_column", "CharField");
+    $this->define("primary_metric_function", "CharField");
+    $this->define("secondary_metric_column", "CharField", array('label'=>'Secondary metric'));
+
+    $this->define("order_results", 'CharField');
     parent::setup();
   }
 

@@ -25,38 +25,62 @@ class CMSAdminReportsController extends AdminComponent{
     foreach($this->report->graphs as $graph){
 
       $data = $this->cms_content;
-      //parse the data based on the kind of graph and metrics
-      //pie chart is the same as grouping by count
-      if(($graph->type == "PieChart" && ($graph->basic_secondary_metric = "count(*)")) || $graph->basic_secondary_metric) $this->graph_data[] = $this->simple_metric($data, $graph);
+      $gdata = array();
+      $secondary = $graph->secondary_metric_column;
 
+      $class = get_class($data->model);
+      $model = new $class;
+
+      if($model->columns[$secondary]) $gdata = $this->complex_metric($data, $graph);
+      else $gdata = $this->simple_metric($data, $graph);
+
+      $this->graph_data[] = array('results'=>$gdata, 'graph'=>$graph);
     }
 
-
+    print_r($this->graph_data);
 
     exit;
   }
 
   public function simple_metric($data, $graph){
-    $primary_metric = stripslashes($graph->primary_metric);
-    $primary_name = $graph->primary_metric_name;
-    $secondary_metric = stripslashes($graph->basic_secondary_metric);
-    $secondary_name = $graph->secondary_metric_name;
-
+    list($primary_metric, $secondary_metric, $primary_name, $secondary_name) = $this->parse_metric_columns($graph, $data);
     $parsed = array(array($primary_name, $secondary_name));
-    $original = $data;
     //group by the primary & also include it in the return
     $results = $data->group($primary_metric);
-    $results->select_columns = array_merge(array("*"), array($primary_metric ." AS primary_metric"));
-    $results = $results->all();
+    $results->select_columns = array_merge(array($data->model->primary_key), array($primary_metric ." AS primary_metric"), array($secondary_metric ." AS secondary_metric"));
+    $results = $results->order($graph->order_results)->all();
 
-    foreach($results as $res){
-      $filter = $res->row['primary_metric'];
-      $look = $data->group($primary_metric);
-      $look->select_columns = array_merge(array("*"), array($secondary_metric ." AS secondary_metric"));
-      $found = $look->filter($primary_metric."='".$filter."'")->first();
-      $parsed[] = array($filter, $found->row['secondary_metric']);
-    }
+    foreach($results as $res) $parsed[] = array($res->row['primary_metric'], $res->row['secondary_metric']);
+
     return $parsed;
+  }
+
+  public function complex_metric($data, $graph){
+    $parsed = array();
+    list($primary_metric, $secondary_metric, $primary_name, $secondary_name) = $this->parse_metric_columns($graph, $data);
+
+    $titles = array($primary_name=>1);
+
+    //so no grouping on this
+    $results = $data->group($primary_metric.", ". $secondary_metric);
+    $results->select_columns = array_merge(array($data->model->primary_key), array("count(*) as cnt"), array($primary_metric ." AS primary_metric"), array($secondary_metric ." AS secondary_metric"));
+    $results = $results->order($graph->order_results)->all();
+
+    foreach($results as $r){
+      $titles[$r->row['secondary_metric']] =1;
+    }
+    print_r($titles);
+
+    return $parsed;
+
+
+    exit;
+  }
+
+  public function parse_metric_columns($graph, $data){
+    $primary_metric = stripslashes(str_replace("?", $graph->primary_metric_column, $graph->primary_metric_function));
+    $secondary_metric = stripslashes($graph->secondary_metric_column);
+
   }
 
 }
