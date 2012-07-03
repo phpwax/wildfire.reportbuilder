@@ -35,19 +35,21 @@ class CMSAdminReportsController extends AdminComponent{
       else $gdata = $this->simple_metric($data, $graph);
 
       $this->graph_data[] = array('results'=>$gdata, 'graph'=>$graph);
+
     }
 
-    print_r($this->graph_data);
 
-    exit;
   }
 
   public function simple_metric($data, $graph){
     $info = $this->parse_metric_columns($graph, $data);
+
     $parsed = array(array($info['primary_name'], $info['secondary_name']));
     //group by the primary & also include it in the return
-    $results = $data->group($primary_metric);
-    $results->select_columns = array_merge(array($data->model->primary_key), array($info['primary_metric'] ." AS primary_metric"), array($info['secondary_metric'] ." AS secondary_metric"));
+    $results = $data->group($info['primary_metric']);
+    $cols = array_merge(array($data->model->primary_key), array($info['primary_metric'] ." AS primary_metric"));
+    if($info['secondary_metric']) $cols = array_merge($cols, array($info['secondary_metric'] ." AS secondary_metric"));
+    $results->select_columns = $cols;
     $results = $results->order($graph->order_results)->all();
 
     foreach($results as $res) $parsed[] = array($res->row['primary_metric'], $res->row['secondary_metric']);
@@ -93,7 +95,8 @@ class CMSAdminReportsController extends AdminComponent{
   }
 
   public function parse_metric_columns($graph, $data){
-    $primary_metric = stripslashes(str_replace("?", $graph->primary_metric_column, $graph->primary_metric_function));
+    if($graph->primary_metric_function) $primary_metric = stripslashes(str_replace("?", $graph->primary_metric_column, $graph->primary_metric_function));
+    else $primary_metric = $graph->primary_metric_column;
     $secondary_metric = stripslashes($graph->secondary_metric_column);
 
     $class = get_class($data->model);
