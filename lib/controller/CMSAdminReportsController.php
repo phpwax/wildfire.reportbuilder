@@ -23,7 +23,6 @@ class CMSAdminReportsController extends AdminComponent{
 
     //go over each graph
     foreach($this->report->graphs as $graph){
-
       $data = $this->cms_content;
       $gdata = array();
       $secondary = $graph->secondary_metric_column;
@@ -35,7 +34,6 @@ class CMSAdminReportsController extends AdminComponent{
       else $gdata = $this->simple_metric($data, $graph);
 
       $this->graph_data[] = array('results'=>$gdata, 'graph'=>$graph);
-
     }
 
 
