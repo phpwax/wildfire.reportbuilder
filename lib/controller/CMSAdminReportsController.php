@@ -26,16 +26,12 @@ class CMSAdminReportsController extends AdminComponent{
       $data = $this->cms_content;
       $gdata = array();
       $secondary = $graph->secondary_metric_column;
-
       $class = get_class($data->model);
       $model = new $class;
-
       if($model->columns[$secondary]) $gdata = $this->complex_metric($data, $graph);
       else $gdata = $this->simple_metric($data, $graph);
-
       $this->graph_data[] = array('results'=>$gdata, 'graph'=>$graph);
     }
-
 
   }
 
@@ -45,13 +41,20 @@ class CMSAdminReportsController extends AdminComponent{
     $parsed = array(array($info['primary_name'], $info['secondary_name']));
     //group by the primary & also include it in the return
     $results = $data->group($info['primary_metric']);
+    $class = get_class($data->model);
     $cols = array_merge(array($data->model->primary_key), array($info['primary_metric'] ." AS primary_metric"));
     if($info['secondary_metric']) $cols = array_merge($cols, array($info['secondary_metric'] ." AS secondary_metric"));
     $results->select_columns = $cols;
     $results = $results->order($graph->order_results)->all();
 
-    foreach($results as $res) $parsed[] = array($res->row['primary_metric'], $res->row['secondary_metric']);
 
+
+    foreach($results as $res){
+      $model = new $class($res->row[$data->model->primary_key]);
+      if($val = $model->humanize($info['primary_label'])) $use = $val;
+      else $use = $res->row['primary_metric'];
+      $parsed[] = array($use, $res->row['secondary_metric']);
+    }
     return $parsed;
   }
 
@@ -65,6 +68,7 @@ class CMSAdminReportsController extends AdminComponent{
     $results->select_columns = array_merge(array($data->model->primary_key), array("count(*) as cnt"), array($info['primary_metric'] ." AS primary_metric"), array($info['secondary_col'] ." AS secondary_metric"));
     $results = $results->order($graph->order_results)->all();
 
+
     $class = get_class($data->model);
     $rows = array();
     foreach($results as $r){
@@ -72,7 +76,7 @@ class CMSAdminReportsController extends AdminComponent{
       $s = $r->row['secondary_metric'];
       if($s){
         $model = new $class($r->row[$data->model->primary_key]);
-        if($val = $model->humanize($info['secondary_metric'])) $titles[$s] = $val;
+        if($val = $model->humanize($info['secondary_label'])) $titles[$s] = $val;
         else $titles[$s] = "n/a";
         $rows[$p][$s] = $r->row['cnt'];
       }
@@ -93,22 +97,39 @@ class CMSAdminReportsController extends AdminComponent{
   }
 
   public function parse_metric_columns($graph, $data){
-    if($graph->primary_metric_function) $primary_metric = stripslashes(str_replace("?", $graph->primary_metric_column, $graph->primary_metric_function));
-    else $primary_metric = $graph->primary_metric_column;
-    $secondary_metric = stripslashes($graph->secondary_metric_column);
 
     $class = get_class($data->model);
     $model = new $class;
-    $info = $model->columns[$graph->primary_metric_column];
-    if(!$primary_name = $info['label']) $primary_name = Inflections::humanize($graph->primary_metric_column);
-    if(($info = $model->columns[$graph->secondary_metric_column])){
-      if(!$secondary_name = $info['label']) $secondary_name = Inflections::humanize($graph->secondary_metric_column);
-      $col = $model->get_col($graph->secondary_metric_column);
-      $secondary_col = $col->col_name;
-    }else $secondary_name = $graph->secondary_metric_column;
+    $primary_col = $model->get_col($graph->primary_metric_column);
+    $secondary = array();
+    $primary = array(
+                    'primary_name'    => ($primary_col->label) ? $primary_col->label : Inflections::humanize($graph->primary_metric_column),
+                    'primary_col'     => $primary_col->col_name,
+                    'primary_label'   => $graph->primary_metric_column,
+                    'primary_metric'  => ($graph->primary_metric_function) ? stripslashes(str_replace("?", $primary_col->col_name, $graph->primary_metric_function)) : $primary_col->col_name,
+                    'primary_col_obj' => $primary_col,
+                    );
+    if($graph->secondary_metric_column && ($model->columns[$graph->secondary_metric_column]) && ($secondary_col = $model->get_col($graph->secondary_metric_column))){
 
-    $res = array('primary_metric'=>$primary_metric, 'secondary_metric'=>$secondary_metric, 'primary_name'=>$primary_name, 'secondary_name'=>$secondary_name, 'primary_col'=>$graph->primary_metric_column, 'secondary_col'=>$secondary_col);
-    return $res;
+      $secondary = array(
+                      'secondary_name'    => ($secondary_col->label) ? $secondary_col->label : Inflections::humanize($graph->secondary_metric_column),
+                      'secondary_col'     => $secondary_col->col_name,
+                      'secondary_label'   => $graph->secondary_metric_column,
+                      'secondary_metric'  => $secondary_col->col_name,
+                      'secondary_col_obj' => $secondary_col,
+                      );
+    }elseif($graph->secondary_metric_column){
+      $secondary = array(
+                      'secondary_name'    => "Other",
+                      'secondary_col'     => $graph->secondary_metric_column,
+                      'secondary_metric'  => $graph->secondary_metric_column,
+                      'secondary_label'   => $graph->secondary_metric_column,
+                      'secondary_col_obj' => $secondary_col,
+                      );
+
+    }
+
+    return array_merge($primary, $secondary);
   }
 
 }
