@@ -1,0 +1,16 @@
+#v2-cms .dashboard-s-large{
+  width:98%;
+  clear:both;
+}
+  #v2-cms .dashboard-s-large .chart{
+    height:300px;
+  }
+#v2-cms .dashboard-s-medium{
+  width:47%;
+}
+#v2-cms .dashboard:first-child{
+  margin-left:0;
+}
+#v2-cms .dashboard:last-child{
+  margin-right:0;
+}
