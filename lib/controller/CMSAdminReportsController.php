@@ -9,6 +9,20 @@ class CMSAdminReportsController extends AdminComponent{
   public $operation_actions = array('edit', 'view');
 
 
+  public function sorting(){
+    if($sort = Request::param('sort')){
+      foreach($sort as $s){
+        $model = new WaxModel;
+        $model->table = "wildfire_graph_wildfire_report";
+        if($found = $model->filter("wildfire_graph_id", $s['graph'])->filter("wildfire_report_id", $s['report'])->first()){
+          $sql = "UPDATE ".$model->table." SET `join_order`=".$s['order']." WHERE `id`=".$found->row['id'];
+          $model::$db->query($sql);
+        }
+      }
+    }
+    exit;
+  }
+
   public function view(){
     WaxEvent::run("cms.model.init", $this);
     WaxEvent::run("cms.form.setup", $this);
@@ -17,6 +31,8 @@ class CMSAdminReportsController extends AdminComponent{
     $this->report = $this->model;
     $this->model_class = $this->report->data_model;
     //at this point need to change the filters to be from the controller handling the data
+
+
     WaxEvent::run("cms.model.init", $this);
     WaxEvent::run("cms.index.setup", $this);
     $this->graph_data = array();
@@ -35,7 +51,7 @@ class CMSAdminReportsController extends AdminComponent{
 
   }
 
-  public function simple_metric($data, $graph){
+  protected function simple_metric($data, $graph){
     $info = $this->parse_metric_columns($graph, $data);
 
     $parsed = array(array($info['primary_name'], $info['secondary_name']));
@@ -45,7 +61,7 @@ class CMSAdminReportsController extends AdminComponent{
     $cols = array_merge(array($data->model->primary_key), array($info['primary_metric'] ." AS primary_metric"));
     if($info['secondary_metric']) $cols = array_merge($cols, array($info['secondary_metric'] ." AS secondary_metric"));
     $results->select_columns = $cols;
-    $results = $results->order($graph->order_results)->all();
+    $results = $results->order($info['primary_col'] ." ASC")->all();
 
 
 
@@ -58,7 +74,7 @@ class CMSAdminReportsController extends AdminComponent{
     return $parsed;
   }
 
-  public function complex_metric($data, $graph){
+  protected function complex_metric($data, $graph){
     $parsed = array();
     $info = $this->parse_metric_columns($graph, $data);
     $titles = array($info['primary_name']);
@@ -66,7 +82,7 @@ class CMSAdminReportsController extends AdminComponent{
     //so no grouping on this
     $results = $data->group($info['primary_metric'].", ". $info['secondary_col']);
     $results->select_columns = array_merge(array($data->model->primary_key), array("count(*) as cnt"), array($info['primary_metric'] ." AS primary_metric"), array($info['secondary_col'] ." AS secondary_metric"));
-    $results = $results->order($graph->order_results)->all();
+    $results = $results->order($info['primary_col'] ." ASC")->all();
 
 
     $class = get_class($data->model);
@@ -96,7 +112,7 @@ class CMSAdminReportsController extends AdminComponent{
     return $parsed;
   }
 
-  public function parse_metric_columns($graph, $data){
+  protected function parse_metric_columns($graph, $data){
 
     $class = get_class($data->model);
     $model = new $class;
