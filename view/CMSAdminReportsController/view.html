@@ -1,15 +1,15 @@
 <div class='cms-wrapper cms-uploads-0 clearfix'>
 <?if($current_user->allowed($module_name, "index")):?>
   <?$mods = CMSApplication::get_modules()?>
-  <div class='index_container'>
+  <div class='index_container clearfix'>
     <div class='clearfix filters_pagination <?if(!$tree_layout && $cms_content->total_without_limits() > $per_page):?> pagination_used<?endif?>'>
 
       <?=partial("_filter_block");?>
     </div>
-
-    <div class='listing' id="data-listing">
+  </div>
+  <div class='graph_container clearfix'>
       <?foreach($graph_data as $gdata):?>
-        <div class='dashboard dashboard-<?=Inflections::to_url($gdata['graph']->title)?> clearfix'>
+        <div data-graph="<?=$gdata['graph']->primval?>" data-report="<?=$report->primval?>" class='dashboard dashboard-<?=Inflections::to_url($gdata['graph']->title)?> clearfix dashboard-s-<?=$gdata['graph']->size?>'>
           <h3><?=$gdata['graph']->title?></h3>
           <div class='chart' id="g-<?=$gdata['graph']->primval?>"></div>
           <table class='graph' id="gdata<?=$gdata['graph']->primval?>" data-type="<?=$gdata['graph']->type?>">
@@ -23,7 +23,6 @@
           </table>
         </div>
       <?endforeach?>
-    </div>
 
   </div>
 
