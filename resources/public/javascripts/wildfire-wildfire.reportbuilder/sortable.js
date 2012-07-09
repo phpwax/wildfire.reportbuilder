@@ -10,7 +10,7 @@ jQuery(document).ready(function(){
             ;
         sort += "sort["+pos+"][order]="+pos+"&sort["+pos+"][graph]="+graph+"&sort["+pos+"][report]="+report+"&";
       });
-      console.log(sort);
+
       jQuery.ajax({
         url:"/admin/reports/sorting/",
         data:sort,
