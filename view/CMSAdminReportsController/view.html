@@ -4,27 +4,14 @@
   <div class='index_container clearfix'>
     <div class='clearfix filters_pagination <?if(!$tree_layout && $cms_content->total_without_limits() > $per_page):?> pagination_used<?endif?>'>
 
-      <?=partial("_filter_block");?>
+      <?=partial("_filter_block", array('filter_partial'=>'_view_filters','filter_fields'=>$filter_fields, 'model'=>$report, 'model_class'=>$model_class, 'model_scope'=>$model_scope, 'model_filters'=>$model_filters));?>
+
     </div>
   </div>
-  <div class='graph_container clearfix'>
-      <?foreach($graph_data as $gdata):?>
-        <div data-graph="<?=$gdata['graph']->primval?>" data-report="<?=$report->primval?>" class='dashboard dashboard-<?=Inflections::to_url($gdata['graph']->title)?> clearfix dashboard-s-<?=$gdata['graph']->size?>'>
-          <h3><?=$gdata['graph']->title?></h3>
-          <div class='chart' id="g-<?=$gdata['graph']->primval?>"></div>
-          <table class='graph' id="gdata<?=$gdata['graph']->primval?>" data-type="<?=$gdata['graph']->type?>">
-            <?foreach($gdata['results'] as $x=>$row):?>
-              <tr>
-                <?foreach($row as $i=>$cell):?>
-                  <?if($i == 0 || $x == 0):?><th><?=$cell?></th><?else:?><td><?=$cell?></td><?endif?>
-                <?endforeach?>
-              </tr>
-            <?endforeach?>
-          </table>
-        </div>
-      <?endforeach?>
 
-  </div>
+  <?=partial("view", $this, "ajax");?>
+
+
 
 
 <?endif?>
