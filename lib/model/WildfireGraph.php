@@ -10,6 +10,7 @@ class WildfireGraph extends WaxModel{
     $this->define("primary_metric_column", "CharField");
     $this->define("primary_metric_function", "CharField");
     $this->define("secondary_metric_column", "CharField", array('label'=>'Secondary metric'));
+    $this->define("condition", "CharField");
 
     $this->define("size", "CharField", array('widget'=>'SelectInput', 'choices'=>WildfireGraph::$graph_sizes, 'default'=>'small'));
     parent::setup();
