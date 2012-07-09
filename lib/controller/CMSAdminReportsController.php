@@ -7,7 +7,7 @@ class CMSAdminReportsController extends AdminComponent{
   public $display_name = "Reports";
   public $dashboard = false;
   public $operation_actions = array('edit', 'view');
-
+  public $model_scope = "live";
 
   public function sorting(){
     if($sort = Request::param('sort')){
@@ -30,12 +30,26 @@ class CMSAdminReportsController extends AdminComponent{
     $this->per_page = false;
     $this->report = $this->model;
     $this->model_class = $this->report->data_model;
-    //at this point need to change the filters to be from the controller handling the data
 
+    //at this point need to change the filters to be from the controller handling the data
+    foreach(CMSApplication::get_modules() as $name=>$info){
+      if($name != "home"){
+        $class = "Admin".Inflections::camelize($name,true)."Controller";
+        $obj = new $class(false, false);
+        if($obj->model_class == $this->model_class){
+          $this->filter_fields = $obj->filter_fields;
+          break;
+        }
+      }
+    }
 
     WaxEvent::run("cms.model.init", $this);
+    WaxEvent::run("cms.model.setup", $this);
     WaxEvent::run("cms.index.setup", $this);
+
+
     $this->graph_data = array();
+
 
     //go over each graph
     foreach($this->report->graphs as $graph){
@@ -61,9 +75,8 @@ class CMSAdminReportsController extends AdminComponent{
     $cols = array_merge(array($data->model->primary_key), array($info['primary_metric'] ." AS primary_metric"));
     if($info['secondary_metric']) $cols = array_merge($cols, array($info['secondary_metric'] ." AS secondary_metric"));
     $results->select_columns = $cols;
+    if($graph->condition) $results->filter($graph->condition);
     $results = $results->order($info['primary_col'] ." ASC")->all();
-
-
 
     foreach($results as $res){
       $model = new $class($res->row[$data->model->primary_key]);
