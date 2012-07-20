@@ -62,7 +62,6 @@ class CMSAdminReportsController extends AdminComponent{
       else $gdata = $this->simple_metric($data, $graph);
       $this->graph_data[] = array('results'=>$gdata, 'graph'=>$graph);
     }
-
   }
 
   protected function simple_metric($data, $graph){
@@ -75,7 +74,10 @@ class CMSAdminReportsController extends AdminComponent{
     $cols = array_merge(array($data->model->primary_key), array($info['primary_metric'] ." AS primary_metric"));
     if($info['secondary_metric']) $cols = array_merge($cols, array($info['secondary_metric'] ." AS secondary_metric"));
     $results->select_columns = $cols;
-    if($graph->condition) $results->filter($graph->condition);
+    if($graph->condition){
+      $results->filters = array();
+      $results->filter(stripslashes($graph->condition));
+    }
     $results = $results->order($info['primary_col'] ." ASC")->all();
 
     foreach($results as $res){
