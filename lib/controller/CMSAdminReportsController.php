@@ -75,7 +75,7 @@ class CMSAdminReportsController extends AdminComponent{
     $results->select_columns = $cols;
     $results->filters = array();
     if($graph->condition) $results->filter(stripslashes($graph->condition));
-    $results = $results->order($info['primary_col'] ." ASC")->all();
+    $results = $results->order(($info['order_by']) ? $info['order_by'] : $info['primary_col'] ." ASC")->all();
 
     foreach($results as $res){
       $model = new $class($res->row[$data->model->primary_key]);
@@ -95,7 +95,7 @@ class CMSAdminReportsController extends AdminComponent{
     $results->filters = array();
     $results = $data->group($info['primary_metric'].", ". $info['secondary_col']);
     $results->select_columns = array_merge(array($data->model->primary_key), array("count(*) as cnt"), array($info['primary_metric'] ." AS primary_metric"), array($info['secondary_col'] ." AS secondary_metric"));
-    $results = $results->order($info['primary_col'] ." ASC")->all();
+    $results = $results->order(($info['order_by']) ? $info['order_by'] : $info['primary_col'] ." ASC")->all();
 
 
     $class = get_class($data->model);
@@ -137,6 +137,7 @@ class CMSAdminReportsController extends AdminComponent{
                     'primary_label'   => $graph->primary_metric_column,
                     'primary_metric'  => ($graph->primary_metric_function) ? stripslashes(str_replace("?", $primary_col->col_name, $graph->primary_metric_function)) : $primary_col->col_name,
                     'primary_col_obj' => $primary_col,
+                    'order_by'        => $graph->order_by
                     );
     if($graph->secondary_metric_column && ($model->columns[$graph->secondary_metric_column]) && ($secondary_col = $model->get_col($graph->secondary_metric_column))){
 
@@ -146,6 +147,7 @@ class CMSAdminReportsController extends AdminComponent{
                       'secondary_label'   => $graph->secondary_metric_column,
                       'secondary_metric'  => $secondary_col->col_name,
                       'secondary_col_obj' => $secondary_col,
+                      'order_by'          => $graph->order_by
                       );
     }elseif($graph->secondary_metric_column){
       $secondary = array(
@@ -154,6 +156,7 @@ class CMSAdminReportsController extends AdminComponent{
                       'secondary_metric'  => $graph->secondary_metric_column,
                       'secondary_label'   => $graph->secondary_metric_column,
                       'secondary_col_obj' => $secondary_col,
+                      'order_by'          => $graph->order_by
                       );
 
     }
