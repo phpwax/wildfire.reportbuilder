@@ -66,7 +66,6 @@ class CMSAdminReportsController extends AdminComponent{
 
   protected function simple_metric($data, $graph){
     $info = $this->parse_metric_columns($graph, $data);
-
     $parsed = array(array($info['primary_name'], $info['secondary_name']));
     //group by the primary & also include it in the return
     $results = $data->group($info['primary_metric']);
@@ -74,10 +73,8 @@ class CMSAdminReportsController extends AdminComponent{
     $cols = array_merge(array($data->model->primary_key), array($info['primary_metric'] ." AS primary_metric"));
     if($info['secondary_metric']) $cols = array_merge($cols, array($info['secondary_metric'] ." AS secondary_metric"));
     $results->select_columns = $cols;
-    if($graph->condition){
-      $results->filters = array();
-      $results->filter(stripslashes($graph->condition));
-    }
+    $results->filters = array();
+    if($graph->condition) $results->filter(stripslashes($graph->condition));
     $results = $results->order($info['primary_col'] ." ASC")->all();
 
     foreach($results as $res){
@@ -95,6 +92,7 @@ class CMSAdminReportsController extends AdminComponent{
     $titles = array($info['primary_name']);
 
     //so no grouping on this
+    $results->filters = array();
     $results = $data->group($info['primary_metric'].", ". $info['secondary_col']);
     $results->select_columns = array_merge(array($data->model->primary_key), array("count(*) as cnt"), array($info['primary_metric'] ." AS primary_metric"), array($info['secondary_col'] ." AS secondary_metric"));
     $results = $results->order($info['primary_col'] ." ASC")->all();
