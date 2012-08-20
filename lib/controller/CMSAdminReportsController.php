@@ -66,6 +66,28 @@ class CMSAdminReportsController extends AdminComponent{
     $this->model = $this->report;
   }
 
+  public function pdf(){
+    $server = "http://".$_SERVER['HTTP_HOST'];
+    $hash = "ex".date("Ymdhis");
+    $folder = WAX_ROOT."tmp/export/";
+    $primval = Request::get("id");
+    mkdir($folder.$hash, 0777, true);
+    $file = $folder.$hash."/".$this->module_name."-".$primval.".pdf";
+    $permalink = "/admin/".$this->module_name."/view/".$primval."/.print?auth_token=".$this->current_user->auth_token;
+    $command = '/usr/bin/xvfb-run -a -s "-screen 0 1024x768x16" /usr/bin/wkhtmltopdf --encoding utf-8 -s A4 -T 0mm -B 20mm -L 0mm -R 0mm "'.$server.$permalink.'" '.$file;
+    shell_exec($command);
+    WaxLog::log('error', '[pdf] '.$command, "pdf");
+    header("Content-type: application/pdf");
+    header("Content-Disposition: attachment; filename=Report-".$primval."-".$hash);
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    $content = file_get_contents($file);
+    unlink($file);
+    foreach(glob($folder.$hash."/*") as $f) unlink($f);
+    rmdir($folder.$hash);
+    echo $content;
+  }
+
   protected function simple_metric($data, $graph){
     $info = $this->parse_metric_columns($graph, $data);
     $parsed = array(array($info['primary_name'], $info['secondary_name']));
