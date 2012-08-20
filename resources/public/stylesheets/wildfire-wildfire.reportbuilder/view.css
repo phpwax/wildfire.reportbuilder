@@ -1,3 +1,6 @@
+#v2-cms *{
+  text-shadow:none !important;
+}
 #v2-cms .dashboard-s-large{
   width:98%;
   clear:both;
@@ -13,4 +16,15 @@
 }
 #v2-cms .dashboard:last-child{
   margin-right:0;
+}
+
+
+.print-view-of-page .dashboard-s-large{
+  page-break-after:always;
+}
+.print-view-of-page #v2-cms .dashboard-s-small{
+  width:47%;
+}
+.print-view-of-page #v2-cms .dashboard-s-small:nth-child(even){
+  page-break-after:always;
 }

@@ -3,7 +3,6 @@
   <?$mods = CMSApplication::get_modules()?>
   <div class='index_container clearfix'>
     <div class='clearfix filters_pagination <?if(!$tree_layout && $cms_content->total_without_limits() > $per_page):?> pagination_used<?endif?>'>
-
       <?=partial("_filter_block", array('filter_partial'=>'_view_filters','filter_fields'=>$filter_fields, 'model'=>$report, 'model_class'=>$model_class, 'model_scope'=>$model_scope, 'model_filters'=>$model_filters));?>
 
     </div>
@@ -11,6 +10,9 @@
 
   <?=partial("view", $this, "ajax");?>
 
+  <div class='form-submit'>
+    <a href="/admin/<?=$module_name?>/view/<?=$report->primval?>/.print?report_printing=1" class='button preview-button orange'>Print</a>
+  </div>
 
 
 

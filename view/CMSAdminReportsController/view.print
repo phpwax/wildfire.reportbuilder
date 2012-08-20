@@ -1,0 +1,12 @@
+<div class='printing_block'>
+<?if($current_user->allowed($module_name, "index")):?>
+  <?$mods = CMSApplication::get_modules()?>
+
+
+  <?=partial("view", $this, "ajax");?>
+
+
+
+
+<?endif?>
+</div>
