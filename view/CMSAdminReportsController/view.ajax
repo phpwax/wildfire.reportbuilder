@@ -15,3 +15,12 @@
   </div>
 <?endforeach?>
 </div>
+
+<div class='form-submit'>
+  <?
+  $string = "";
+  foreach(Request::param('filters') as $k=>$v) $string.="&filters[".$k."]=".$v;
+  ?>
+  <a href="/admin/<?=$module_name?>/view/<?=$report->primval?>/.print?report_printing=1<?=$string?>" class='button preview-button orange'>Print</a>
+  <a href="/admin/<?=$module_name?>/pdf/<?=$report->primval?>/?<?=$string?>" class='button preview-button orange'>PDF</a>
+</div>

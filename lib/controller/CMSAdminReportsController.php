@@ -74,6 +74,7 @@ class CMSAdminReportsController extends AdminComponent{
     mkdir($folder.$hash, 0777, true);
     $file = $folder.$hash."/".$this->module_name."-".$primval.".pdf";
     $permalink = "/admin/".$this->module_name."/view/".$primval."/.print?auth_token=".$this->current_user->auth_token;
+    if($filters = Request::param('filters')) foreach($filters as $k=>$v) $permalink.="&filters[".$k."]=".$v;
     $command = '/usr/bin/xvfb-run -a -s "-screen 0 1024x768x16" /usr/bin/wkhtmltopdf --encoding utf-8 -s A4 -T 0mm -B 20mm -L 0mm -R 0mm "'.$server.$permalink.'" '.$file;
     shell_exec($command);
     WaxLog::log('error', '[pdf] '.$command, "pdf");
