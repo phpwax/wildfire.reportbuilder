@@ -2,7 +2,7 @@
 <?if($current_user->allowed($module_name, "index")):?>
   <?$mods = CMSApplication::get_modules()?>
   <div class='index_container clearfix'>
-    <div class='clearfix filters_pagination <?if(!$tree_layout && $cms_content->total_without_limits() > $per_page):?> pagination_used<?endif?>'>
+    <div class='clearfix filters_pagination'>
       <?=partial("_filter_block", array('filter_partial'=>'_view_filters','filter_fields'=>$filter_fields, 'model'=>$report, 'model_class'=>$model_class, 'model_scope'=>$model_scope, 'model_filters'=>$model_filters));?>
 
     </div>
