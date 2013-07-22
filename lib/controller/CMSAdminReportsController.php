@@ -27,6 +27,7 @@ class CMSAdminReportsController extends AdminComponent{
   public function view(){
     WaxEvent::run("cms.model.init", $this);
     WaxEvent::run("cms.form.setup", $this);
+
     //swap the model_class
     $this->per_page = false;
     $this->report = $this->model;
@@ -43,15 +44,17 @@ class CMSAdminReportsController extends AdminComponent{
         }
       }
     }
+
     WaxEvent::run("cms.model.init", $this);
     WaxEvent::run("cms.model.setup", $this);
-    WaxEvent::run("cms.index.setup", $this);
+    //WaxEvent::run("cms.index.setup", $this);
 
     $this->graph_data = array();
-    //run filters on to the cms content
 
+    //run filters on to the cms content
     //go over each graph
     foreach($this->report->graphs as $graph){
+
       $this->model = new $this->model_class;
       //run filters on the model
       WaxEvent::run("cms.model.filters", $this);
@@ -64,6 +67,7 @@ class CMSAdminReportsController extends AdminComponent{
 
     }
     $this->model = $this->report;
+
   }
 
   public function pdf(){
