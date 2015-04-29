@@ -99,7 +99,7 @@ class CMSAdminReportsController extends AdminComponent{
     //group by the primary & also include it in the return
     $results = $data->group($info['primary_metric']);
     $class = get_class($data);
-    $cols = array_merge(array($data->table.".".$data->primary_key), array($data->table.".".$info['primary_metric'] ." AS primary_metric"));
+    $cols = array_merge(array($data->table.".".$data->primary_key), array($info['primary_metric'] ." AS primary_metric"));
     if($info['secondary_metric']) $cols = array_merge($cols, array($info['secondary_metric'] ." AS secondary_metric"));
     $cols = array_filter($cols);
     $results->select_columns = $cols;
@@ -125,7 +125,7 @@ class CMSAdminReportsController extends AdminComponent{
     //so no grouping on this
     $results->filters = $this->preset_filters;
     $results = $data->group($info['primary_metric'].", ". $info['secondary_col']);
-    $results->select_columns = array_merge(array($data->table.".".$data->primary_key), array("count(*) as cnt"), array($data->table.".".$info['primary_metric'] ." AS primary_metric"), array($data->table.".".$info['secondary_col'] ." AS secondary_metric"));
+    $results->select_columns = array_merge(array($data->table.".".$data->primary_key), array("count(*) as cnt"), array($info['primary_metric'] ." AS primary_metric"), array($info['secondary_col'] ." AS secondary_metric"));
     if($graph->left_join_table) $results->left_join($graph->left_join_table)->join_condition($graph->left_join_condition);
     $results = $results->order(($info['order_by']) ? $info['order_by'] : $info['primary_col'] ." ASC")->all();
 
